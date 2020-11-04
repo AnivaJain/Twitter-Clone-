@@ -8,25 +8,33 @@
 
 import UIKit
 
-class HomeTableTableViewController: UITableViewController {
+class HomeViewController: UITableViewController {
     
     var tweetArray = [NSDictionary]()
     var numberOfTweets: Int!
     
     let myRefreshControl = UIRefreshControl()
     
-
+    @IBOutlet var tweetTable: UITableView!
+    
     override func viewDidLoad() {
         super.viewDidLoad()
-        loadTweets()
-        myRefreshControl.addTarget(self, action: #selector(loadTweets), for: .valueChanged)
-        tableView.refreshControl = myRefreshControl
         
-
+        numberOfTweets = 20
+        loadTweetsTable()
+        myRefreshControl.addTarget(self, action: #selector(loadTweetsTable), for: .valueChanged)
+        self.tweetTable.refreshControl =  myRefreshControl
+        self.loadTweetsTable()
     }
     
-    @objc func loadTweets() {
-        
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        self.loadTweetsTable()
+    }
+    
+    
+    
+    @objc func loadTweetsTable() {
         numberOfTweets = 20
         let myParams = ["count": 10 ]
         let myUrl = "https://api.twitter.com/1.1/statuses/home_timeline.json"
@@ -59,8 +67,9 @@ class HomeTableTableViewController: UITableViewController {
             self.tableView.reloadData()
             self.myRefreshControl.endRefreshing()
             
-         }, failure: { (Error) in
-                print("Could not retrieve tweets!")
+         }, failure: { (error) in
+            print(error.localizedDescription)
+            print("Could not retrieve tweets!")
         })
     }
     
@@ -92,6 +101,9 @@ class HomeTableTableViewController: UITableViewController {
             cell.profileImageView.image = UIImage(data: imageData)
        
         }
+        cell.setFavorite(tweetArray[indexPath.row]["favorited"] as! Bool)
+        cell.tweetId = tweetArray[indexPath.row]["id"] as! Int
+        cell.setRetweeted(tweetArray[indexPath.row]["retweeted"] as! Bool)
         
         return cell
 
